@@ -333,9 +333,9 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
 if __name__ == "__main__":
     try:
         JOBNAME = 'AP_RACK_TRUEUP_AUTOMATION'
-        # receiver_email ='yashn.jain@biourja.com, devina.ligga@bioruja.com, yashn.jain@biourja.com, priyanshi.jhawar@biourja.com, \
-                            # ravinder.rathore@biourja.com, rahul.gupta@biourja.com, arvind.patidar@biourja.com, ankur.modi@biourja.com'
-        receiver_email = 'yashn.jain@biourja.com'
+        receiver_email ='yashn.jain@biourja.com, devina.ligga@bioruja.com, imam.khan@biourja.com, priyanshi.jhawar@biourja.com, \
+                            ravinder.rathore@biourja.com, rahul.gupta@biourja.com, arvind.patidar@biourja.com, ankur.modi@biourja.com'
+        # receiver_email = 'yashn.jain@biourja.com'
         today_date = date.today()
         # today_date = datetime.strptime("12-08-2022", "%d-%m-%Y").date()
         prev_month_last_date = today_date.replace(day=1) -timedelta(days=1)
