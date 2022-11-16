@@ -318,8 +318,8 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                 Summary_sheet.api.Columns.ColumnWidth = 23
             else:
                 print("em_df not created or trueup dont exist") 
-            filename= rackOutput+"\\"+f"Rack AP Data {file_month} {file_year}"
-            wb.save(rackOutput+"\\"+f"Rack AP Data {file_month} {file_year}")
+            filename= rackOutput+"\\"+f"Rack AP Data {file_month} {file_year}.xlsx"
+            wb.save(rackOutput+"\\"+f"Rack AP Data {file_month} {file_year}.xlsx")
         return filename
     except Exception as e:
         raise e
