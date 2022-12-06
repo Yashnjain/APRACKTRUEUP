@@ -190,7 +190,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                 PVI_sheet.api.AutoFilterMode=False
                 wb.app.api.CutCopyMode=False
                 PVI_sheet.api.Cells.FormatConditions.Delete()
-
+                Pvi_last_row = PVI_sheet.range(f'A'+ str(PVI_sheet.cells.last_cell.row)).end('up').row
                 PVI_sheet.range(f'{Pvi_Links_letter_column}{Pvi_last_row+5}').expand('down').delete()
 
                 CHS_PVI_sheet.activate()
