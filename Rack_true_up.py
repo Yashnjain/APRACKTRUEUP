@@ -169,6 +169,13 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                 font_colour,Interior_colour = conditional_formatting(columnvalue=Pvi_Links_letter_column,working_sheet=PVI_sheet,working_workbook=wb)
 
                 PVI_sheet.api.Range(f"{Pvi_Links_letter_column}1").AutoFilter(Field:=f"{Pvi_Links_no_column}", Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
+                
+                Account_no_column=PVI_column_list.index('Account')+1
+                Account_letter_column = num_to_col_letters(Account_no_column)
+                try:
+                    PVI_sheet.api.Range(f"{Account_letter_column}1").AutoFilter(Field:=f"{Account_no_column}", Criteria1:=[key+f"*"])
+                except:
+                    pass    
 
                 Pvi_last_row = PVI_sheet.range(f'A'+ str(PVI_sheet.cells.last_cell.row)).end('up').row
                 Pvi_last_column = PVI_sheet.range('A1').end('right').last_cell.column
