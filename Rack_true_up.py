@@ -126,10 +126,11 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                 print(f"{path2} Excel file not present for date {file_month2}{file_year}")
 
             TRUE_UP_DF = pd.read_excel(trueup_file + f"\\{file_month2}{file_year} AP PO.xlsx")
-            ori_dict = {"Poet Biofuels":"POET Biofuels","Harvestone":"Harvestone Commodities LLC",
-                "CHS":"CHS Inc.",
-                "FMC":"Fuel Marketing Corporation",
-                "GPTG":"Green Plains Trade Group LLC"}
+            path4 = focus_mapping_file  + f"\\Rack vendor Details.xlsx"
+            if not os.path.exists(path4):
+                print(f"{path4} Excel file not present")
+            ORI_DF = pd.read_excel(path4)   
+            ori_dict = ORI_DF.set_index(ORI_DF.columns[0])[ORI_DF.columns[1]].to_dict()
             # ori_dict = {key.upper(): val for key, val in ori_dict.items()}
             TRUE_UP_index_dict = {}
             for i,x in TRUE_UP_DF.iterrows():
@@ -154,10 +155,10 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                     wb.app.selection.copy()
 
                     time.sleep(1)
-                    wb.sheets.add(f"{key} MRN {file_month}",after=Open_gr_sheet)
+                    wb.sheets.add(f"{key} MRN {file_month}-{values}",after=Open_gr_sheet)####################33
                     time.sleep(1)
 
-                    CHS_MRN_sheet = wb.sheets[f"{key} MRN {file_month}"]
+                    CHS_MRN_sheet = wb.sheets[f"{key} MRN {file_month}-{values}"]#############3
                     CHS_MRN_sheet.range(f"A1").paste()
                     Open_gr_sheet.api.AutoFilterMode=False
                     wb.app.api.CutCopyMode=False
@@ -197,10 +198,10 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                     wb.app.selection.copy()
 
                     time.sleep(1)
-                    wb.sheets.add(f"{key} PVI {file_month}",after=Open_gr_sheet)
+                    wb.sheets.add(f"{key} PVI {file_month}-{values}",after=Open_gr_sheet)################3
                     time.sleep(1)
 
-                    CHS_PVI_sheet = wb.sheets[f"{key} PVI {file_month}"]
+                    CHS_PVI_sheet = wb.sheets[f"{key} PVI {file_month}-{values}"]###############33
                     CHS_PVI_sheet.range(f"A1").paste()
                     CHS_PVI_sheet.autofit()
                     CHS_PVI_sheet.api.Cells.FormatConditions.Delete()
@@ -247,7 +248,14 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                     df = df.rename(columns={"Debit Amount":"Prov Amt"})
 
                     a=purchase_price.replace(' ','_')
-                    final_price = Pricing_index_dict[a.upper().split('_MONTH')[0]+"_Ethanol"]-float(a.upper().split('-')[-1])
+                    try:
+                        if '-' in a:
+                            final_price = Pricing_index_dict[a.upper().split('_MONTH')[0]+"_Ethanol"]-float(a.upper().split('-')[-1])
+                        elif '+' in a:
+                            final_price = Pricing_index_dict[a.upper().split('_MONTH')[0]+"_Ethanol"]+float(a.upper().split('+')[-1])  
+                    except Exception as e:
+                        logging.info("new case for price index recived")
+                        raise e
 
                     filters = list(set(Terminal_column_value))
 
@@ -297,6 +305,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                         # em_df['Diff'] = round(em_df['Amount']/em_df['Qty'],4)
                         
                         # CHS_sheet.api.Range(f"L{t_last_row+2}").Value = f"Sds"
+                        CHS_sheet.activate()
                         insert_all_borders(cellrange=f"L{t_last_row+2}",working_sheet=CHS_sheet,working_workbook=wb)
                         insert_all_borders(cellrange=f"Q{t_last_row+2}",working_sheet=CHS_sheet,working_workbook=wb)
 
@@ -306,12 +315,15 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                         CHS_sheet.api.Range(f"{initial_row+1}:{initial_row+1}").Insert(Shift:=win32c.Direction.xlDown)
                         CHS_sheet.api.Range(f"{initial_row+1}:{initial_row+1}").Insert(Shift:=win32c.Direction.xlDown)
                         CHS_sheet.api.Range(f"{initial_row+1}:{initial_row+1}").Insert(Shift:=win32c.Direction.xlDown)
-                        CHS_sheet.api.Range(f"B{initial_row+2}").Value = f"PO# {value}"
+                        CHS_sheet.api.Range(f"B{initial_row+2}").Value = f"PO# {values}"
                         CHS_sheet.api.Range(f"I{initial_row+2}").Value = purchase_price
-                        p_ters = purchase_price.split("-")[0].strip()
+                        if '-' in purchase_price:
+                            p_ters = purchase_price.split("-")[0].strip()
+                        elif '+' in purchase_price:
+                            p_ters = purchase_price.split("+")[0].strip() 
                         CHS_sheet.api.Range(f"O{initial_row+2}").Value = final_price
                         CHS_sheet.autofit()
-                        em_df = em_df.append({'Vendor':key,'Location':filter,'Qty':Q_amt,'Amount':diff_amt,'Diff':round(diff_amt/Q_amt,4),'Pricing Terms':p_ters},ignore_index=True)
+                        em_df = em_df.append({'Vendor':value[0],'Location':filter,'Qty':Q_amt,'Amount':diff_amt,'Diff':round(diff_amt/Q_amt,5),'Pricing Terms':p_ters},ignore_index=True)
             print("done")
             wb.sheets.add(f"Summary",after=Open_gr_sheet)
             time.sleep(1)
@@ -333,7 +345,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                 Summary_sheet.api.Range(f"D{s_last_row+2}").Font.Bold = True
                 Summary_sheet.api.Range(f"E{s_last_row+2}").Font.Bold = True
                 Summary_sheet.autofit()
-                Summary_sheet.api.Columns.ColumnWidth = 23
+                Summary_sheet.api.Columns.ColumnWidth = 30
             else:
                 print("em_df not created or trueup dont exist") 
             filename= rackOutput+"\\"+f"Rack AP Data {file_month} {file_year}.xlsx"
@@ -362,6 +374,7 @@ if __name__ == "__main__":
         j_loc = r'J:\India\Trueup\TrueupAutomation\AP_Rack_TrueUp'
         logfile = os.getcwd()+'\\logs\\' + JOBNAME+str(today_date)+'.txt'
         trueup_file = r'J:\India\Trueup\TrueupAutomation\AP_Rack_TrueUp\Rack PO details'
+        focus_mapping_file = r'J:\India\Trueup\TrueupAutomation\AP_Rack_TrueUp\Focus Mapping'
         # rackInput = os.getcwd()+f"\\Input"
         rackInput = j_loc+f"\\Input"
         
