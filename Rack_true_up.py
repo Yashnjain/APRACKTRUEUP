@@ -5,6 +5,8 @@ import pandas as pd
 import xlwings.constants as win32c
 import bu_alerts
 import bu_config
+from bu_config import config as buconfig
+import numpy as np
 
 def xlOpner(inputFile):
     try:
@@ -362,10 +364,19 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
 
 if __name__ == "__main__":
     try:
-        credential_dict = bu_config.get_config('AP_RACK_TRUEUP_AUTOMATION', 'Not Required',other_vert= True)
+        job_id=np.random.randint(1000000,9999999)
+        credential_dict = bu_config.get_config('AP_RACK_TRUEUP_AUTOMATION', 'N',other_vert= True)
         JOBNAME = credential_dict['PROJECT_NAME']
         receiver_email =credential_dict['EMAIL_LIST'] # receiver_email = 'yashn.jain@biourja.com'
+        # receiver_email = "amanullah.khan@biourja.com"
+        
         today_date = date.today()
+        
+        
+        #START LOG 
+        log_json = '[{"JOB_ID": "'+str(job_id)+'","CURRENT_DATETIME": "'+str(datetime.now())+'"}]'
+        bu_alerts.bulog(process_name=credential_dict['PROJECT_NAME'],table_name='N',status='STARTED',process_owner=credential_dict['IT_OWNER'] ,row_count=0,log=log_json,database='BUITDB_DEV',warehouse='BUIT_WH' ) 
+        
         # today_date = datetime.strptime("12-08-2022", "%d-%m-%Y").date()
         prev_month_last_date = today_date.replace(day=1) -timedelta(days=1)
         prev_month_year = datetime.strftime(prev_month_last_date, "%m.%y")
@@ -394,9 +405,17 @@ if __name__ == "__main__":
             filename=logfile)
         logging.info("Starting AP_RACK_TRUEUP_AUTOMATION")
         filename = rackTrueup(priceInput,rackInput,trueup_file,rackOutput)
-        bu_alerts.send_mail(receiver_email = receiver_email,mail_subject =f'JOB SUCCESS -{JOBNAME}',mail_body = f'{JOBNAME} Completed Successfully, Attached logs',attachment_location = logfile)
+        
+        log_json = '[{"JOB_ID": "'+str(job_id)+'","CURRENT_DATETIME": "'+str(datetime.now())+'"}]'
+        bu_alerts.bulog(process_name=credential_dict['PROJECT_NAME'],table_name='N',status='COMPLETED',process_owner=credential_dict['IT_OWNER'] ,row_count=1,log=log_json,database='BUITDB_DEV',warehouse='BUIT_WH' ) 
+        bu_alerts.send_mail(receiver_email = receiver_email,mail_subject =f'JOB SUCCESS -{JOBNAME}',mail_body = f'{JOBNAME} Completed Successfully,Attached logs',attachment_location = logfile)
+        
     except Exception as e:
         logging.exception(e)
+        
+        log_json = '[{"JOB_ID": "'+str(job_id)+'","CURRENT_DATETIME": "'+str(datetime.now())+'"}]'
+        bu_alerts.bulog(process_name=credential_dict['PROJECT_NAME'],table_name='N',status='FAILED',process_owner=credential_dict['IT_OWNER'] ,row_count=0,log=log_json,database='BUITDB_DEV',warehouse='BUIT_WH' ) 
+
         bu_alerts.send_mail(receiver_email = receiver_email,mail_subject =f'JOB FAILED -{JOBNAME}',mail_body = f'{JOBNAME} failed, Attached logs',attachment_location = logfile)
         sys.exit(-1)
     
