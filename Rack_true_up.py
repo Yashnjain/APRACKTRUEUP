@@ -430,5 +430,5 @@ if __name__ == "__main__":
         bu_alerts.bulog(process_name=JOBNAME,table_name=table_name,status='FAILED',process_owner=OWNER ,row_count=0,log=log_json,database=database,warehouse=warehouse ) 
 
         bu_alerts.send_mail(receiver_email = receiver_email,mail_subject =f'JOB FAILED -{JOBNAME}',mail_body = f'{JOBNAME} failed, Attached logs',attachment_location = logfile)
-        sys.exit(-1)
+        
     
