@@ -20,8 +20,8 @@ def xlOpner(inputFile):
                 if retry==9:
                     raise e
     except Exception as e:
-        print(f"Exception caught in xlOpner function: {e}")
-        logging.info(f"Exception caught in xlOpner function: {e}")
+        print(f"Exception caught in xlOpner method: {e}")
+        logging.info(f"Exception caught in xlOpner method: {e}")
         raise e
     
 def num_to_col_letters(num):
@@ -33,8 +33,8 @@ def num_to_col_letters(num):
             num = (num - 1) // 26
         return ''.join(reversed(letters))
     except Exception as e:
-        print(f"Exception caught in num_to_col_letters function: {e}")
-        logging.info(f"Exception caught in num_to_col_letters function: {e}")
+        print(f"Exception caught in num_to_col_letters method: {e}")
+        logging.info(f"Exception caught in num_to_col_letters method: {e}")
         raise e
     
 def insert_all_borders(cellrange:str,working_sheet,working_workbook):
@@ -43,8 +43,6 @@ def insert_all_borders(cellrange:str,working_sheet,working_workbook):
         working_workbook.app.selection.api.Borders(win32c.BordersIndex.xlDiagonalDown).LineStyle = win32c.Constants.xlNone
         working_workbook.app.selection.api.Borders(win32c.BordersIndex.xlDiagonalUp).LineStyle = win32c.Constants.xlNone
         working_workbook.app.selection.api.Borders(win32c.BordersIndex.xlEdgeLeft).LineStyle = win32c.Constants.xlNone
-        # linestylevalues=[win32c.BordersIndex.xlEdgeLeft,win32c.BordersIndex.xlEdgeTop,win32c.BordersIndex.xlEdgeBottom,win32c.BordersIndex.xlEdgeRight,win32c.BordersIndex.xlInsideVertical,win32c.BordersIndex.xlInsideHorizontal]
-        # for values in linestylevalues:
         a=working_workbook.app.selection.api.Borders(win32c.BordersIndex.xlEdgeTop)
         a.LineStyle = win32c.LineStyle.xlContinuous
         a.ColorIndex = 0
@@ -59,8 +57,8 @@ def insert_all_borders(cellrange:str,working_sheet,working_workbook):
         working_workbook.app.selection.api.Borders(win32c.BordersIndex.xlInsideVertical).LineStyle = win32c.Constants.xlNone
         working_workbook.app.selection.api.Borders(win32c.BordersIndex.xlInsideHorizontal).LineStyle = win32c.Constants.xlNone
     except Exception as e:
-        print(f"Exception caught in insert_all_borders function: {e}")
-        logging.info(f"Exception caught in insert_all_borders function: {e}")
+        print(f"Exception caught in insert_all_borders method: {e}")
+        logging.info(f"Exception caught in insert_all_borders method: {e}")
         raise e
 
 def conditional_formatting(columnvalue:str,working_sheet,working_workbook):
@@ -76,14 +74,15 @@ def conditional_formatting(columnvalue:str,working_sheet,working_workbook):
         working_workbook.app.selection.api.FormatConditions(1).Interior.PatternColorIndex = win32c.Constants.xlAutomatic
         return font_colour,Interior_colour
     except Exception as e:
-        print(f"Exception caught in conditional_formatting function: {e}")
-        logging.info(f"Exception caught in conditional_formatting function: {e}")
+        print(f"Exception caught in conditional_formatting method: {e}")
+        logging.info(f"Exception caught in conditional_formatting method: {e}")
         raise e
 
 def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
     try:
         for file in glob.glob(rackInput+"\\*.xlsx"):
             path, file_name = os.path.split(file)
+            
             #Getting prev month dates
             file_date = file_name.split('_')[-1].replace(".xlsx","").strip()
             file_month = datetime.strptime(file_date,"%m.%Y").strftime("%b")
@@ -125,13 +124,11 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                 print(f"{path4} Excel file not present")
             ORI_DF = pd.read_excel(path4)   
             ori_dict = ORI_DF.set_index(ORI_DF.columns[0])[ORI_DF.columns[1]].to_dict()
-            # ori_dict = {key.upper(): val for key, val in ori_dict.items()}
             TRUE_UP_index_dict = {}
             for i,x in TRUE_UP_DF.iterrows():
                 TRUE_UP_index_dict.setdefault(TRUE_UP_DF[TRUE_UP_DF.columns[0]][i], []).append(TRUE_UP_DF[TRUE_UP_DF.columns[1]][i])
             for i in TRUE_UP_index_dict.keys():
                 TRUE_UP_index_dict[i] = [ori_dict[i],TRUE_UP_index_dict[i]]    
-            # TRUE_UP_index_dict=dict(zip(TRUE_UP_DF[TRUE_UP_DF.columns[0]], TRUE_UP_DF[TRUE_UP_DF.columns[1]])) 
             em_df = pd.DataFrame(columns = ['Vendor', 'Location', 'Qty', 'Amount', 'Diff', 'Pricing Terms'])
             for key,value in TRUE_UP_index_dict.items():
                 for values in value[1]:
@@ -176,9 +173,9 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                     PVI_sheet.api.Range(f"A1:{Pvi_last_column_letter}{Pvi_last_row}").SpecialCells(12).Select()
                     wb.app.selection.copy()
                     time.sleep(1)
-                    wb.sheets.add(f"{key} PVI {file_month}-{values}",after=Open_gr_sheet)################3
+                    wb.sheets.add(f"{key} PVI {file_month}-{values}",after=Open_gr_sheet)
                     time.sleep(1)
-                    CHS_PVI_sheet = wb.sheets[f"{key} PVI {file_month}-{values}"]###############33
+                    CHS_PVI_sheet = wb.sheets[f"{key} PVI {file_month}-{values}"]
                     CHS_PVI_sheet.range(f"A1").paste()
                     CHS_PVI_sheet.autofit()
                     CHS_PVI_sheet.api.Cells.FormatConditions.Delete()
@@ -198,7 +195,6 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                     Terminal_column_value = CHS_PVI_sheet.range(f"{Terminal_Links_letter_column}2:{Terminal_Links_letter_column}{CHS_PVI_last_row}").value
                     buy_sheet = wb.sheets['Buy']
                     buy_sheet.activate()
-                    # buy_sheet.api.Range(f"A:A").Select()
                     buy_sheet_last_row = buy_sheet.range(f'A'+ str(buy_sheet.cells.last_cell.row)).end('up').row
                     buy_sheet.api.Range(f"A1:A{buy_sheet_last_row}").AutoFilter(Field:=1, Criteria1:=[values])
                     buy_sheet_last_column = buy_sheet.range('A1').end('right').end('right').last_cell.column
@@ -209,14 +205,11 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                     Purchasep_letter_column = num_to_col_letters(Purchasep_no_column)
                     purchase_price = buy_sheet.api.Range(f"{Purchasep_letter_column}{buy_sheet_last_row}").Value
                     buy_sheet.api.AutoFilterMode=False
-
                     clist=["Voucher","Product Name","Bill No","Date","Vendor Inv. Dt.","BOLNumber","Terminal ","Account","Gross Qty","Net Qty","Billed Qty","Debit Amount"]	
-
                     df = CHS_PVI_sheet.range(f'A1:{CHS_PVI_last_letter_column }{CHS_PVI_last_row}').options(pd.DataFrame, chunksize=10_000).value
                     df = df.reset_index()
                     df = df[clist]
                     df = df.rename(columns={"Debit Amount":"Prov Amt"})
-
                     a=purchase_price.replace(' ','_')
                     try:
                         if '-' in a:
@@ -236,9 +229,6 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                         temp_df["Gross Qty"] = temp_df["Gross Qty"].astype(int)
                         temp_df["Net Qty"] = temp_df["Net Qty"].astype(int)
                         temp_df["Billed Qty"] = temp_df["Billed Qty"].astype(int)
-                        # v['Vendor'] = [key]
-                        # em_df['Location'] = filter
-                        # if not lastrow:
                         try:
                             wb.sheets.add(f"{key}",after=Open_gr_sheet)
                             time.sleep(1)
@@ -252,30 +242,16 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                         CHS_sheet.range(f'B{initial_row}').options(index = False).value = temp_df 
                         CHS_sheet.autofit()
                         CHS_sheet.api.Range(f"{initial_row}:{initial_row}").Font.Bold = True
-                        # else:
-                        # CHS_sheet.range(f'B{initial_row+1}').options(index = False).value = temp_df 
-                        # CHS_sheet.autofit()
-                        # CHS_sheet.api.Range(f"{initial_row+1}:{initial_row+1}").Font.Bold = True 
-
-                        # if not lastrow:
-                        t_last_row = CHS_sheet.range(f'B'+ str(CHS_sheet.cells.last_cell.row)).end('up').row
-                        # else:
-                        #     t_last_row = lastrow+ 1
-                        
+                        t_last_row = CHS_sheet.range(f'B'+ str(CHS_sheet.cells.last_cell.row)).end('up').row                     
                         CHS_sheet.api.Range(f"L{t_last_row+2}").Value = f'=SUM(L{initial_row+1}:L{t_last_row})'
                         Q_amt = CHS_sheet.api.Range(f"L{t_last_row+2}").Value
                         CHS_sheet.api.Range(f"Q{t_last_row+2}").Value = f'=SUM(Q{initial_row+1}:Q{t_last_row})'
                         diff_amt = CHS_sheet.api.Range(f"Q{t_last_row+2}").Value
-
-                        # em_df['Diff'] = round(em_df['Amount']/em_df['Qty'],4)
-                        # CHS_sheet.api.Range(f"L{t_last_row+2}").Value = f"Sds"
                         CHS_sheet.activate()
                         insert_all_borders(cellrange=f"L{t_last_row+2}",working_sheet=CHS_sheet,working_workbook=wb)
                         insert_all_borders(cellrange=f"Q{t_last_row+2}",working_sheet=CHS_sheet,working_workbook=wb)
-
                         CHS_sheet.api.Range(f"L{t_last_row+2}").Font.Bold = True
                         CHS_sheet.api.Range(f"Q{t_last_row+2}").Font.Bold = True
-
                         CHS_sheet.api.Range(f"{initial_row+1}:{initial_row+1}").Insert(Shift:=win32c.Direction.xlDown)
                         CHS_sheet.api.Range(f"{initial_row+1}:{initial_row+1}").Insert(Shift:=win32c.Direction.xlDown)
                         CHS_sheet.api.Range(f"{initial_row+1}:{initial_row+1}").Insert(Shift:=win32c.Direction.xlDown)
@@ -316,8 +292,8 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
             wb.save(rackOutput+"\\"+f"Rack AP Data {file_month} {file_year}.xlsx")
         return filename
     except Exception as e:
-        print(f"Exception caught in rackTrueup function: {e}")
-        logging.info(f"Exception caught in rackTrueup function: {e}")
+        print(f"Exception caught in rackTrueup method: {e}")
+        logging.info(f"Exception caught in rackTrueup method: {e}")
         raise e
 
     finally:
@@ -347,22 +323,15 @@ if __name__ == "__main__":
         prev_month_last_date = today_date.replace(day=1) -timedelta(days=1)
         prev_month_year = datetime.strftime(prev_month_last_date, "%m.%y")
         prev_month_year2 = datetime.strftime(prev_month_last_date, "%B %Y").upper()
-        j_loc = r'J:\India\Trueup\TrueupAutomation\AP_Rack_TrueUp'
+        
+        root_loc = r'J:\India\Trueup\TrueupAutomation\AP_Rack_TrueUp'
         logfile = os.getcwd()+'\\logs\\' + JOBNAME+str(today_date)+'.txt'
-        trueup_file = r'J:\India\Trueup\TrueupAutomation\AP_Rack_TrueUp\Rack PO details'
-        focus_mapping_file = r'J:\India\Trueup\TrueupAutomation\AP_Rack_TrueUp\Focus Mapping'
-        rackInput = j_loc+f"\\Input"
+        trueup_file = root_loc+r'\Rack PO details'
+        focus_mapping_file = root_loc+r'\Focus Mapping'
+        rackInput = root_loc+f"\\Input"
+        priceInput = root_loc+f"\\Prices"
+        rackOutput = root_loc+"\\Output"
         
-        # rackInput = os.getcwd()+f"\\Input"
-        # j_loc = r"J:\India\Trueup\TrueupAutomation"
-        # bulkInput = os.getcwd()+"\\Input\\bulkRaw"
-        # priceInput = os.getcwd()+f"\\Prices"
-        # bulkOutput = os.getcwd()+"\\Output\\Bulk_AR"
-        # bulkOutput = os.getcwd()+"\\Output"
-        # input_mapping = j_loc+f"\\Prices\\{prev_month_year}Prices.xlsx"
-        
-        priceInput = j_loc+f"\\Prices"
-        rackOutput = j_loc+"\\Output"
         logging.basicConfig(
             level=logging.INFO,
             format='%(asctime)s [%(levelname)s] - %(message)s',
