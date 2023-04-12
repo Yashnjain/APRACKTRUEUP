@@ -1,12 +1,11 @@
-import os, logging, glob, time, sys
-from datetime import datetime, date,timedelta
-import xlwings as xw
-import pandas as pd
-import xlwings.constants as win32c
 import bu_alerts
-import bu_config
-from bu_config import config as buconfig
 import numpy as np
+import pandas as pd
+import xlwings as xw
+import os, logging, glob, time
+import xlwings.constants as win32c
+from bu_config import config as buconfig
+from datetime import datetime, date,timedelta
 
 def xlOpner(inputFile):
     try:
@@ -21,8 +20,10 @@ def xlOpner(inputFile):
                 if retry==9:
                     raise e
     except Exception as e:
+        print(f"Exception caught in xlOpner function: {e}")
+        logging.info(f"Exception caught in xlOpner function: {e}")
         raise e
-
+    
 def num_to_col_letters(num):
     try:
         letters = ''
@@ -32,9 +33,10 @@ def num_to_col_letters(num):
             num = (num - 1) // 26
         return ''.join(reversed(letters))
     except Exception as e:
+        print(f"Exception caught in num_to_col_letters function: {e}")
+        logging.info(f"Exception caught in num_to_col_letters function: {e}")
         raise e
-
-
+    
 def insert_all_borders(cellrange:str,working_sheet,working_workbook):
     try:
         working_sheet.api.Range(cellrange).Select()
@@ -57,6 +59,8 @@ def insert_all_borders(cellrange:str,working_sheet,working_workbook):
         working_workbook.app.selection.api.Borders(win32c.BordersIndex.xlInsideVertical).LineStyle = win32c.Constants.xlNone
         working_workbook.app.selection.api.Borders(win32c.BordersIndex.xlInsideHorizontal).LineStyle = win32c.Constants.xlNone
     except Exception as e:
+        print(f"Exception caught in insert_all_borders function: {e}")
+        logging.info(f"Exception caught in insert_all_borders function: {e}")
         raise e
 
 def conditional_formatting(columnvalue:str,working_sheet,working_workbook):
@@ -66,16 +70,15 @@ def conditional_formatting(columnvalue:str,working_sheet,working_workbook):
         working_sheet.api.Range(f"{columnvalue}:{columnvalue}").Select()
         working_workbook.app.selection.api.FormatConditions.AddUniqueValues()
         working_workbook.app.selection.api.FormatConditions(working_workbook.app.selection.api.FormatConditions.Count).SetFirstPriority()
-
         working_workbook.app.selection.api.FormatConditions(1).DupeUnique = win32c.DupeUnique.xlDuplicate
-
         working_workbook.app.selection.api.FormatConditions(1).Font.Color = font_colour
         working_workbook.app.selection.api.FormatConditions(1).Interior.Color = Interior_colour
         working_workbook.app.selection.api.FormatConditions(1).Interior.PatternColorIndex = win32c.Constants.xlAutomatic
         return font_colour,Interior_colour
     except Exception as e:
+        print(f"Exception caught in conditional_formatting function: {e}")
+        logging.info(f"Exception caught in conditional_formatting function: {e}")
         raise e
-
 
 def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
     try:
@@ -94,23 +97,15 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
             column_list = Open_gr_sheet.range("B6").expand('right').value
             Voucher_no_column=column_list.index('Voucher')+2
             Voucher_letter_column = num_to_col_letters(Voucher_no_column)
-
             Open_gr_sheet.api.Range(f"{Voucher_letter_column}6").AutoFilter(Field:=f"{Voucher_no_column-1}", Criteria1:=["=*PVI*"], Operator:=win32c.AutoFilterOperator.xlAnd)
-
-
             last_row = Open_gr_sheet.range(f'B'+ str(Open_gr_sheet.cells.last_cell.row)).end('up').row
             last_column = Open_gr_sheet.range('B6').end('right').last_cell.column
             last_column_letter=num_to_col_letters(last_column)
-
             Open_gr_sheet.api.Range(f"{Voucher_letter_column}6:{last_column_letter}{last_row}").SpecialCells(12).Select()
-            # time.sleep(10000)
-
             wb.app.selection.copy()
-
             time.sleep(1)
             wb.sheets.add(f"PVI Data {file_month}",after=Open_gr_sheet)
             time.sleep(1)
-
             PVI_sheet = wb.sheets[f"PVI Data {file_month}"]
             PVI_sheet.range(f"A1").paste()
             Open_gr_sheet.api.AutoFilterMode=False
@@ -121,12 +116,9 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                 print(f"{path} Excel file not present for date {file_month}{file_year}")
             PRICING_DF = pd.read_excel(priceInput + f"\\{file_month}{file_year}Prices.xlsx")
             Pricing_index_dict=dict(zip(PRICING_DF[PRICING_DF.columns[0]], PRICING_DF[PRICING_DF.columns[1]])) 
-
-
             path2 = trueup_file + f"\\{file_month2}{file_year} AP PO.xlsx"
             if not os.path.exists(path2):
                 print(f"{path2} Excel file not present for date {file_month2}{file_year}")
-
             TRUE_UP_DF = pd.read_excel(trueup_file + f"\\{file_month2}{file_year} AP PO.xlsx")
             path4 = focus_mapping_file  + f"\\Rack vendor Details.xlsx"
             if not os.path.exists(path4):
@@ -150,59 +142,42 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                     last_row = Open_gr_sheet.range(f'B'+ str(Open_gr_sheet.cells.last_cell.row)).end('up').row
                     last_column = Open_gr_sheet.range('B6').end('right').last_cell.column
                     last_column_letter=num_to_col_letters(last_column)
-
                     Open_gr_sheet.api.Range(f"{Voucher_letter_column}6:{last_column_letter}{last_row}").SpecialCells(12).Select()
-                    # time.sleep(10000)
-
                     wb.app.selection.copy()
-
                     time.sleep(1)
-                    wb.sheets.add(f"{key} MRN {file_month}-{values}",after=Open_gr_sheet)####################33
-                    time.sleep(1)
-
-                    CHS_MRN_sheet = wb.sheets[f"{key} MRN {file_month}-{values}"]#############3
+                    wb.sheets.add(f"{key} MRN {file_month}-{values}",after=Open_gr_sheet)
+                    CHS_MRN_sheet = wb.sheets[f"{key} MRN {file_month}-{values}"]
                     CHS_MRN_sheet.range(f"A1").paste()
                     Open_gr_sheet.api.AutoFilterMode=False
                     wb.app.api.CutCopyMode=False
                     CHS_MRN_sheet.autofit()
-
                     last_row_chs = CHS_MRN_sheet.range(f'A'+ str(Open_gr_sheet.cells.last_cell.row)).end('up').row
                     PVI_sheet.activate()
                     PVI_column_list = PVI_sheet.range("A1").expand('right').value
-
                     Pvi_Links_no_column=PVI_column_list.index('Links')+1
                     Pvi_Links_letter_column = num_to_col_letters(Pvi_Links_no_column)
                     Pvi_last_row = PVI_sheet.range(f'{Pvi_Links_letter_column}'+ str(PVI_sheet.cells.last_cell.row)).end('up').row
-
                     CHS_MRN_sheet.activate()
                     CHS_MRN_sheet.range(f"A2:A{last_row_chs}").copy()
                     time.sleep(1)
                     PVI_sheet.activate()
                     PVI_sheet.range(f'{Pvi_Links_letter_column}{Pvi_last_row+5}').paste()
-
                     font_colour,Interior_colour = conditional_formatting(columnvalue=Pvi_Links_letter_column,working_sheet=PVI_sheet,working_workbook=wb)
-
                     PVI_sheet.api.Range(f"{Pvi_Links_letter_column}1").AutoFilter(Field:=f"{Pvi_Links_no_column}", Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
-                    
                     Account_no_column=PVI_column_list.index('Account')+1
                     Account_letter_column = num_to_col_letters(Account_no_column)
                     try:
                         PVI_sheet.api.Range(f"{Account_letter_column}1").AutoFilter(Field:=f"{Account_no_column}", Criteria1:=[value[0]])
                     except:
                         pass    
-
                     Pvi_last_row = PVI_sheet.range(f'A'+ str(PVI_sheet.cells.last_cell.row)).end('up').row
                     Pvi_last_column = PVI_sheet.range('A1').end('right').last_cell.column
                     Pvi_last_column_letter=num_to_col_letters(Pvi_last_column)
-
                     PVI_sheet.api.Range(f"A1:{Pvi_last_column_letter}{Pvi_last_row}").SpecialCells(12).Select()
-
                     wb.app.selection.copy()
-
                     time.sleep(1)
                     wb.sheets.add(f"{key} PVI {file_month}-{values}",after=Open_gr_sheet)################3
                     time.sleep(1)
-
                     CHS_PVI_sheet = wb.sheets[f"{key} PVI {file_month}-{values}"]###############33
                     CHS_PVI_sheet.range(f"A1").paste()
                     CHS_PVI_sheet.autofit()
@@ -213,18 +188,14 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                     PVI_sheet.api.Cells.FormatConditions.Delete()
                     Pvi_last_row = PVI_sheet.range(f'A'+ str(PVI_sheet.cells.last_cell.row)).end('up').row
                     PVI_sheet.range(f'{Pvi_Links_letter_column}{Pvi_last_row+5}').expand('down').delete()
-
                     CHS_PVI_sheet.activate()
                     CHS_PVI_last_column = CHS_PVI_sheet.range('A1').end('right').last_cell.column
                     CHS_PVI_last_letter_column = num_to_col_letters(CHS_PVI_last_column)
-                    
                     CHS_PVI_column_list = CHS_PVI_sheet.range("A1").expand('right').value
                     Terminal_Links_no_column=CHS_PVI_column_list.index('Terminal ')+1
                     Terminal_Links_letter_column = num_to_col_letters(Terminal_Links_no_column)
                     CHS_PVI_last_row = CHS_PVI_sheet.range(f'A'+ str(CHS_PVI_sheet.cells.last_cell.row)).end('up').row
                     Terminal_column_value = CHS_PVI_sheet.range(f"{Terminal_Links_letter_column}2:{Terminal_Links_letter_column}{CHS_PVI_last_row}").value
-
-
                     buy_sheet = wb.sheets['Buy']
                     buy_sheet.activate()
                     # buy_sheet.api.Range(f"A:A").Select()
@@ -236,11 +207,8 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                     buy_sheet_last_row = buy_sheet.range(f'A'+ str(buy_sheet.cells.last_cell.row)).end('up').row
                     Purchasep_no_column=buy_sheet_column_list.index('Purchase Price')+1
                     Purchasep_letter_column = num_to_col_letters(Purchasep_no_column)
-
-
                     purchase_price = buy_sheet.api.Range(f"{Purchasep_letter_column}{buy_sheet_last_row}").Value
                     buy_sheet.api.AutoFilterMode=False
-
 
                     clist=["Voucher","Product Name","Bill No","Date","Vendor Inv. Dt.","BOLNumber","Terminal ","Account","Gross Qty","Net Qty","Billed Qty","Debit Amount"]	
 
@@ -258,9 +226,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                     except Exception as e:
                         logging.info("new case for price index recived")
                         raise e
-
                     filters = list(set(Terminal_column_value))
-
                     for filter in filters:
                         temp_df = df[(df['Terminal ']==filter)]
                         temp_df.insert(loc = len(temp_df.columns)-1,column = 'Prov Price',value = round(temp_df['Prov Amt']/temp_df['Billed Qty'],5))
@@ -270,8 +236,6 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                         temp_df["Gross Qty"] = temp_df["Gross Qty"].astype(int)
                         temp_df["Net Qty"] = temp_df["Net Qty"].astype(int)
                         temp_df["Billed Qty"] = temp_df["Billed Qty"].astype(int)
-
-
                         # v['Vendor'] = [key]
                         # em_df['Location'] = filter
                         # if not lastrow:
@@ -281,12 +245,10 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                             CHS_sheet = wb.sheets[f"{key}"]
                         except:
                             CHS_sheet = wb.sheets[f"{key}"]
-
                         current_company_last_row = CHS_sheet.range(f'L'+ str(CHS_sheet.cells.last_cell.row)).end('up').row
                         initial_row=1
                         if initial_row!=current_company_last_row:
                             initial_row = current_company_last_row+2
-
                         CHS_sheet.range(f'B{initial_row}').options(index = False).value = temp_df 
                         CHS_sheet.autofit()
                         CHS_sheet.api.Range(f"{initial_row}:{initial_row}").Font.Bold = True
@@ -299,13 +261,13 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                         t_last_row = CHS_sheet.range(f'B'+ str(CHS_sheet.cells.last_cell.row)).end('up').row
                         # else:
                         #     t_last_row = lastrow+ 1
+                        
                         CHS_sheet.api.Range(f"L{t_last_row+2}").Value = f'=SUM(L{initial_row+1}:L{t_last_row})'
                         Q_amt = CHS_sheet.api.Range(f"L{t_last_row+2}").Value
                         CHS_sheet.api.Range(f"Q{t_last_row+2}").Value = f'=SUM(Q{initial_row+1}:Q{t_last_row})'
                         diff_amt = CHS_sheet.api.Range(f"Q{t_last_row+2}").Value
 
                         # em_df['Diff'] = round(em_df['Amount']/em_df['Qty'],4)
-                        
                         # CHS_sheet.api.Range(f"L{t_last_row+2}").Value = f"Sds"
                         CHS_sheet.activate()
                         insert_all_borders(cellrange=f"L{t_last_row+2}",working_sheet=CHS_sheet,working_workbook=wb)
@@ -354,6 +316,8 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
             wb.save(rackOutput+"\\"+f"Rack AP Data {file_month} {file_year}.xlsx")
         return filename
     except Exception as e:
+        print(f"Exception caught in rackTrueup function: {e}")
+        logging.info(f"Exception caught in rackTrueup function: {e}")
         raise e
 
     finally:
@@ -365,32 +329,21 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
 if __name__ == "__main__":
     try:
         job_id=np.random.randint(1000000,9999999)
-        
-        
-        credential_dict = bu_config.get_config('AP_RACK_TRUEUP_AUTOMATION', 'N',other_vert= True)
+        credential_dict = buconfig.get_config('AP_RACK_TRUEUP_AUTOMATION', 'N',other_vert= True)
         OWNER = credential_dict['IT_OWNER']
         JOBNAME = credential_dict['PROJECT_NAME']
         table_name = credential_dict['TABLE_NAME']
         receiver_email =credential_dict['EMAIL_LIST'] 
-        # receiver_email = "amanullah.khan@biourja.com"
-        
-        
-        #PROD ENTRIES
         # database=credential_dict['DATABASE'].split(";")[0]
         # warehouse=credential_dict['DATABASE'].split(";")[1]
-        
-        #DEV ENTRIES
         database="BUITDB_DEV"
         warehouse="BUIT_WH"
-        
         today_date = date.today()
         
-        
-        #START LOG 
-        log_json = '[{"JOB_ID": "'+str(job_id)+'","CURRENT_DATETIME": "'+str(datetime.now())+'"}]'
+        #BU_LOG entry(started) in PROCESS_LOG table 
+        log_json = '[{"JOB_ID": "'+str(job_id)+'","JOBNAME": "'+str(JOBNAME)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "STARTED"}]'
         bu_alerts.bulog(process_name=JOBNAME,table_name=table_name,status='STARTED',process_owner=OWNER ,row_count=0,log=log_json,database=database,warehouse=warehouse ) 
-        
-        # today_date = datetime.strptime("12-08-2022", "%d-%m-%Y").date()
+       
         prev_month_last_date = today_date.replace(day=1) -timedelta(days=1)
         prev_month_year = datetime.strftime(prev_month_last_date, "%m.%y")
         prev_month_year2 = datetime.strftime(prev_month_last_date, "%B %Y").upper()
@@ -398,20 +351,18 @@ if __name__ == "__main__":
         logfile = os.getcwd()+'\\logs\\' + JOBNAME+str(today_date)+'.txt'
         trueup_file = r'J:\India\Trueup\TrueupAutomation\AP_Rack_TrueUp\Rack PO details'
         focus_mapping_file = r'J:\India\Trueup\TrueupAutomation\AP_Rack_TrueUp\Focus Mapping'
-        # rackInput = os.getcwd()+f"\\Input"
         rackInput = j_loc+f"\\Input"
         
-
+        # rackInput = os.getcwd()+f"\\Input"
         # j_loc = r"J:\India\Trueup\TrueupAutomation"
         # bulkInput = os.getcwd()+"\\Input\\bulkRaw"
         # priceInput = os.getcwd()+f"\\Prices"
-        priceInput = j_loc+f"\\Prices"
         # bulkOutput = os.getcwd()+"\\Output\\Bulk_AR"
         # bulkOutput = os.getcwd()+"\\Output"
-        rackOutput = j_loc+"\\Output"
-
         # input_mapping = j_loc+f"\\Prices\\{prev_month_year}Prices.xlsx"
-
+        
+        priceInput = j_loc+f"\\Prices"
+        rackOutput = j_loc+"\\Output"
         logging.basicConfig(
             level=logging.INFO,
             format='%(asctime)s [%(levelname)s] - %(message)s',
@@ -419,16 +370,17 @@ if __name__ == "__main__":
         logging.info("Starting AP_RACK_TRUEUP_AUTOMATION")
         filename = rackTrueup(priceInput,rackInput,trueup_file,rackOutput)
         
-        log_json = '[{"JOB_ID": "'+str(job_id)+'","CURRENT_DATETIME": "'+str(datetime.now())+'"}]'
+        #BU_LOG entry(Completed) in PROCESS_LOG table
+        log_json = '[{"JOB_ID": "'+str(job_id)+'","JOBNAME": "'+str(JOBNAME)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "JOB SUCCESS"}]'
         bu_alerts.bulog(process_name=JOBNAME,table_name=table_name,status='JOB SUCCESS',process_owner=OWNER,row_count=1,log=log_json,database=database,warehouse=warehouse ) 
         bu_alerts.send_mail(receiver_email = receiver_email,mail_subject =f'JOB SUCCESS -{JOBNAME}',mail_body = f'{JOBNAME} Completed Successfully,Attached logs',attachment_location = logfile)
         
     except Exception as e:
-        logging.exception(e)
         
-        log_json = '[{"JOB_ID": "'+str(job_id)+'","CURRENT_DATETIME": "'+str(datetime.now())+'"}]'
+        #BU_LOG entry(Failed) in PROCESS_LOG table
+        log_json = '[{"JOB_ID": "'+str(job_id)+'","JOBNAME": "'+str(JOBNAME)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "FAILED"}]'
         bu_alerts.bulog(process_name=JOBNAME,table_name=table_name,status='FAILED',process_owner=OWNER ,row_count=0,log=log_json,database=database,warehouse=warehouse ) 
-
         bu_alerts.send_mail(receiver_email = receiver_email,mail_subject =f'JOB FAILED -{JOBNAME}',mail_body = f'{JOBNAME} failed, Attached logs',attachment_location = logfile)
+        logging.exception(e)  
         
     
