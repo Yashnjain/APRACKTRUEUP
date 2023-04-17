@@ -78,7 +78,7 @@ def conditional_formatting(columnvalue:str,working_sheet,working_workbook):
         logging.info(f"Exception caught in conditional_formatting method: {e}")
         raise e
 
-def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
+def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
     try:
         for file in glob.glob(rackInput+"\\*.xlsx"):
             path, file_name = os.path.split(file)
@@ -127,6 +127,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
             TRUE_UP_index_dict = {}
             for i,x in TRUE_UP_DF.iterrows():
                 TRUE_UP_index_dict.setdefault(TRUE_UP_DF[TRUE_UP_DF.columns[0]][i], []).append(TRUE_UP_DF[TRUE_UP_DF.columns[1]][i])
+                print(x)
             for i in TRUE_UP_index_dict.keys():
                 TRUE_UP_index_dict[i] = [ori_dict[i],TRUE_UP_index_dict[i]]    
             em_df = pd.DataFrame(columns = ['Vendor', 'Location', 'Qty', 'Amount', 'Diff', 'Pricing Terms'])
@@ -302,8 +303,8 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
             wb.app.kill()
         except:
             pass
-
-if __name__ == "__main__":
+        
+def ap_rack_trueup():
     try:
         job_id=np.random.randint(1000000,9999999)
         credential_dict = buconfig.get_config('AP_RACK_TRUEUP_AUTOMATION', 'N',other_vert= True)
@@ -315,15 +316,16 @@ if __name__ == "__main__":
         # warehouse=credential_dict['DATABASE'].split(";")[1]
         database="BUITDB_DEV"
         warehouse="BUIT_WH"
-        today_date = date.today()
         
         #BU_LOG entry(started) in PROCESS_LOG table 
         log_json = '[{"JOB_ID": "'+str(job_id)+'","jobname": "'+str(jobname)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "STARTED"}]'
         bu_alerts.bulog(process_name=jobname,table_name=table_name,status='STARTED',process_owner=owner ,row_count=0,log=log_json,database=database,warehouse=warehouse) 
        
-        prev_month_last_date = today_date.replace(day=1) -timedelta(days=1)
-        prev_month_year = datetime.strftime(prev_month_last_date, "%m.%y")
-        prev_month_year2 = datetime.strftime(prev_month_last_date, "%B %Y").upper()
+        
+        #for getting date of prev month
+        # prev_month_last_date = today_date.replace(day=1) -timedelta(days=1)
+        # prev_month_year = datetime.strftime(prev_month_last_date, "%m.%y")
+        # prev_month_year2 = datetime.strftime(prev_month_last_date, "%B %Y").upper()
         
         root_loc = credential_dict["API_KEY"]                         #getting root location from buconfig
         # root_loc = r'J:\India\Trueup\TrueupAutomation\AP_Rack_TrueUp'
@@ -339,8 +341,8 @@ if __name__ == "__main__":
             format='%(asctime)s [%(levelname)s] - %(message)s',
             filename=logfile)
         logging.info("Starting AP_RACK_TRUEUP_AUTOMATION")
-        filename = rackTrueup(priceInput,rackInput,trueup_file,rackOutput)
-        
+        filename = rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file)
+        print(filename)
         #BU_LOG entry(Completed) in PROCESS_LOG table
         log_json = '[{"JOB_ID": "'+str(job_id)+'","jobname": "'+str(jobname)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "JOB SUCCESS"}]'
         bu_alerts.bulog(process_name=jobname,table_name=table_name,status='JOB SUCCESS',process_owner=owner,row_count=1,log=log_json,database=database,warehouse=warehouse ) 
@@ -352,6 +354,11 @@ if __name__ == "__main__":
         log_json = '[{"JOB_ID": "'+str(job_id)+'","jobname": "'+str(jobname)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "FAILED"}]'
         bu_alerts.bulog(process_name=jobname,table_name=table_name,status='FAILED',process_owner=owner ,row_count=0,log=log_json,database=database,warehouse=warehouse ) 
         bu_alerts.send_mail(receiver_email = receiver_email,mail_subject =f'JOB FAILED -{jobname}',mail_body = f'{jobname} failed, Attached logs',attachment_location = logfile)
-        logging.exception(e)  
+        logging.exception(e)
+    
+        
+if __name__ == "__main__":
+   ap_rack_trueup()
+      
         
     
