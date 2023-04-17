@@ -160,6 +160,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput):
                     PVI_sheet.activate()
                     PVI_sheet.range(f'{Pvi_Links_letter_column}{Pvi_last_row+5}').paste()
                     font_colour,Interior_colour = conditional_formatting(columnvalue=Pvi_Links_letter_column,working_sheet=PVI_sheet,working_workbook=wb)
+                    print(font_colour)
                     PVI_sheet.api.Range(f"{Pvi_Links_letter_column}1").AutoFilter(Field:=f"{Pvi_Links_no_column}", Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
                     Account_no_column=PVI_column_list.index('Account')+1
                     Account_letter_column = num_to_col_letters(Account_no_column)
@@ -306,8 +307,8 @@ if __name__ == "__main__":
     try:
         job_id=np.random.randint(1000000,9999999)
         credential_dict = buconfig.get_config('AP_RACK_TRUEUP_AUTOMATION', 'N',other_vert= True)
-        OWNER = credential_dict['IT_OWNER']
-        JOBNAME = credential_dict['PROJECT_NAME']
+        owner = credential_dict['IT_OWNER']
+        jobname = credential_dict['PROJECT_NAME']
         table_name = credential_dict['TABLE_NAME']
         receiver_email =credential_dict['EMAIL_LIST'] 
         # database=credential_dict['DATABASE'].split(";")[0]
@@ -317,15 +318,16 @@ if __name__ == "__main__":
         today_date = date.today()
         
         #BU_LOG entry(started) in PROCESS_LOG table 
-        log_json = '[{"JOB_ID": "'+str(job_id)+'","JOBNAME": "'+str(JOBNAME)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "STARTED"}]'
-        bu_alerts.bulog(process_name=JOBNAME,table_name=table_name,status='STARTED',process_owner=OWNER ,row_count=0,log=log_json,database=database,warehouse=warehouse ) 
+        log_json = '[{"JOB_ID": "'+str(job_id)+'","jobname": "'+str(jobname)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "STARTED"}]'
+        bu_alerts.bulog(process_name=jobname,table_name=table_name,status='STARTED',process_owner=owner ,row_count=0,log=log_json,database=database,warehouse=warehouse) 
        
         prev_month_last_date = today_date.replace(day=1) -timedelta(days=1)
         prev_month_year = datetime.strftime(prev_month_last_date, "%m.%y")
         prev_month_year2 = datetime.strftime(prev_month_last_date, "%B %Y").upper()
         
-        root_loc = r'J:\India\Trueup\TrueupAutomation\AP_Rack_TrueUp'
-        logfile = os.getcwd()+'\\logs\\' + JOBNAME+str(today_date)+'.txt'
+        root_loc = credential_dict["API_KEY"]                         #getting root location from buconfig
+        # root_loc = r'J:\India\Trueup\TrueupAutomation\AP_Rack_TrueUp'
+        logfile = os.getcwd()+'\\logs\\' + jobname+'.txt'
         trueup_file = root_loc+r'\Rack PO details'
         focus_mapping_file = root_loc+r'\Focus Mapping'
         rackInput = root_loc+f"\\Input"
@@ -340,16 +342,16 @@ if __name__ == "__main__":
         filename = rackTrueup(priceInput,rackInput,trueup_file,rackOutput)
         
         #BU_LOG entry(Completed) in PROCESS_LOG table
-        log_json = '[{"JOB_ID": "'+str(job_id)+'","JOBNAME": "'+str(JOBNAME)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "JOB SUCCESS"}]'
-        bu_alerts.bulog(process_name=JOBNAME,table_name=table_name,status='JOB SUCCESS',process_owner=OWNER,row_count=1,log=log_json,database=database,warehouse=warehouse ) 
-        bu_alerts.send_mail(receiver_email = receiver_email,mail_subject =f'JOB SUCCESS -{JOBNAME}',mail_body = f'{JOBNAME} Completed Successfully,Attached logs',attachment_location = logfile)
+        log_json = '[{"JOB_ID": "'+str(job_id)+'","jobname": "'+str(jobname)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "JOB SUCCESS"}]'
+        bu_alerts.bulog(process_name=jobname,table_name=table_name,status='JOB SUCCESS',process_owner=owner,row_count=1,log=log_json,database=database,warehouse=warehouse ) 
+        bu_alerts.send_mail(receiver_email = receiver_email,mail_subject =f'JOB SUCCESS -{jobname}',mail_body = f'{jobname} Completed Successfully,Attached logs',attachment_location = logfile)
         
     except Exception as e:
         
         #BU_LOG entry(Failed) in PROCESS_LOG table
-        log_json = '[{"JOB_ID": "'+str(job_id)+'","JOBNAME": "'+str(JOBNAME)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "FAILED"}]'
-        bu_alerts.bulog(process_name=JOBNAME,table_name=table_name,status='FAILED',process_owner=OWNER ,row_count=0,log=log_json,database=database,warehouse=warehouse ) 
-        bu_alerts.send_mail(receiver_email = receiver_email,mail_subject =f'JOB FAILED -{JOBNAME}',mail_body = f'{JOBNAME} failed, Attached logs',attachment_location = logfile)
+        log_json = '[{"JOB_ID": "'+str(job_id)+'","jobname": "'+str(jobname)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "FAILED"}]'
+        bu_alerts.bulog(process_name=jobname,table_name=table_name,status='FAILED',process_owner=owner ,row_count=0,log=log_json,database=database,warehouse=warehouse ) 
+        bu_alerts.send_mail(receiver_email = receiver_email,mail_subject =f'JOB FAILED -{jobname}',mail_body = f'{jobname} failed, Attached logs',attachment_location = logfile)
         logging.exception(e)  
         
     
