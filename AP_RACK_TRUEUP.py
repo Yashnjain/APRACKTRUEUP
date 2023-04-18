@@ -1,11 +1,14 @@
+import os
+import time
+import glob
+import logging
 import bu_alerts
 import numpy as np
 import pandas as pd
 import xlwings as xw
-import os, logging, glob, time
+from datetime import datetime
 import xlwings.constants as win32c
 from bu_config import config as buconfig
-from datetime import datetime, date,timedelta
 
 def xlOpner(inputFile):
     try:
@@ -128,9 +131,11 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
             for i,x in TRUE_UP_DF.iterrows():
                 TRUE_UP_index_dict.setdefault(TRUE_UP_DF[TRUE_UP_DF.columns[0]][i], []).append(TRUE_UP_DF[TRUE_UP_DF.columns[1]][i])
                 print(x)
+                
             for i in TRUE_UP_index_dict.keys():
                 TRUE_UP_index_dict[i] = [ori_dict[i],TRUE_UP_index_dict[i]]    
             em_df = pd.DataFrame(columns = ['Vendor', 'Location', 'Qty', 'Amount', 'Diff', 'Pricing Terms'])
+            
             for key,value in TRUE_UP_index_dict.items():
                 for values in value[1]:
                     Open_gr_sheet.activate()
@@ -222,6 +227,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
                         logging.info("new case for price index recived")
                         raise e
                     filters = list(set(Terminal_column_value))
+                    
                     for filter in filters:
                         temp_df = df[(df['Terminal ']==filter)]
                         temp_df.insert(loc = len(temp_df.columns)-1,column = 'Prov Price',value = round(temp_df['Prov Amt']/temp_df['Billed Qty'],5))
@@ -290,6 +296,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
                 Summary_sheet.api.Columns.ColumnWidth = 30
             else:
                 print("em_df not created or trueup dont exist") 
+                logging.info("em_df not created or trueup dont exist");
             filename= rackOutput+"\\"+f"Rack AP Data {file_month} {file_year}.xlsx"
             wb.save(rackOutput+"\\"+f"Rack AP Data {file_month} {file_year}.xlsx")
         return filename
@@ -304,7 +311,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
         except:
             pass
         
-def ap_rack_trueup():
+def AP_RACK_TRUEUP():
     try:
         job_id=np.random.randint(1000000,9999999)
         credential_dict = buconfig.get_config('AP_RACK_TRUEUP_AUTOMATION', 'N',other_vert= True)
@@ -322,13 +329,12 @@ def ap_rack_trueup():
         bu_alerts.bulog(process_name=jobname,table_name=table_name,status='STARTED',process_owner=owner ,row_count=0,log=log_json,database=database,warehouse=warehouse) 
        
         
-        #for getting date of prev month
+        #for getting date of prev month req for some cases
         # prev_month_last_date = today_date.replace(day=1) -timedelta(days=1)
         # prev_month_year = datetime.strftime(prev_month_last_date, "%m.%y")
         # prev_month_year2 = datetime.strftime(prev_month_last_date, "%B %Y").upper()
         
-        root_loc = credential_dict["API_KEY"]                         #getting root location from buconfig
-        # root_loc = r'J:\India\Trueup\TrueupAutomation\AP_Rack_TrueUp'
+        root_loc = credential_dict["API_KEY"]                                   #getting root location from buconfig
         logfile = os.getcwd()+'\\logs\\' + jobname+'.txt'
         trueup_file = root_loc+r'\Rack PO details'
         focus_mapping_file = root_loc+r'\Focus Mapping'
@@ -358,7 +364,7 @@ def ap_rack_trueup():
     
         
 if __name__ == "__main__":
-   ap_rack_trueup()
+   AP_RACK_TRUEUP()
       
         
     
