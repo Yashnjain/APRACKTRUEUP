@@ -10,7 +10,7 @@ from datetime import datetime
 import xlwings.constants as win32c
 from bu_config import config as buconfig
 
-def xlOpner(inputFile):
+def xlOpener(inputFile):
     try:
         retry = 0
         while retry<10:
@@ -23,8 +23,8 @@ def xlOpner(inputFile):
                 if retry==9:
                     raise e
     except Exception as e:
-        print(f"Exception caught in xlOpner method: {e}")
-        logging.info(f"Exception caught in xlOpner method: {e}")
+        print(f"Exception caught in xlOpener method: {e}")
+        logging.info(f"Exception caught in xlOpener method: {e}")
         raise e
     
 def num_to_col_letters(num):
@@ -93,7 +93,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
             file_month2 = datetime.strptime(file_date,"%m.%Y").strftime("%m")
             logging.info("Opening operating workbook instance of excel")
             if os.path.exists(file):
-                wb = xlOpner(file)    
+                wb = xlOpener(file)    
             Open_gr_sheet = wb.sheets[f"Open GR {file_month} {file_year}"]
             Open_gr_sheet.activate()
             column_list = Open_gr_sheet.range("B6").expand('right').value
@@ -224,7 +224,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
                         elif '+' in a:
                             final_price = Pricing_index_dict[a.upper().split('_MONTH')[0]+"_Ethanol"]+float(a.upper().split('+')[-1])  
                     except Exception as e:
-                        logging.info("new case for price index recived")
+                        logging.info("new case for price index recieved")
                         raise e
                     filters = list(set(Terminal_column_value))
                     
@@ -311,7 +311,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
         except:
             pass
         
-def AP_RACK_TRUEUP():
+def ap_rack_true_up_runner():
     try:
         job_id=np.random.randint(1000000,9999999)
         credential_dict = buconfig.get_config('AP_RACK_TRUEUP_AUTOMATION', 'N',other_vert= True)
@@ -334,7 +334,8 @@ def AP_RACK_TRUEUP():
         # prev_month_year = datetime.strftime(prev_month_last_date, "%m.%y")
         # prev_month_year2 = datetime.strftime(prev_month_last_date, "%B %Y").upper()
         
-        root_loc = credential_dict["API_KEY"]                                   #getting root location from buconfig
+        #getting root location from buconfig
+        root_loc = credential_dict["API_KEY"]                                   
         logfile = os.getcwd()+'\\logs\\' + jobname+'.txt'
         trueup_file = root_loc+r'\Rack PO details'
         focus_mapping_file = root_loc+r'\Focus Mapping'
@@ -350,21 +351,22 @@ def AP_RACK_TRUEUP():
         filename = rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file)
         print(filename)
         #BU_LOG entry(Completed) in PROCESS_LOG table
-        log_json = '[{"JOB_ID": "'+str(job_id)+'","jobname": "'+str(jobname)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "JOB SUCCESS"}]'
-        bu_alerts.bulog(process_name=jobname,table_name=table_name,status='JOB SUCCESS',process_owner=owner,row_count=1,log=log_json,database=database,warehouse=warehouse ) 
+        log_json = '[{"JOB_ID": "'+str(job_id)+'","jobname": "'+str(jobname)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "COMPLETED"}]'
+        bu_alerts.bulog(process_name=jobname,table_name=table_name,status='COMPLETED',process_owner=owner,row_count=1,log=log_json,database=database,warehouse=warehouse ) 
         bu_alerts.send_mail(receiver_email = receiver_email,mail_subject =f'JOB SUCCESS -{jobname}',mail_body = f'{jobname} Completed Successfully,Attached logs',attachment_location = logfile)
         
     except Exception as e:
         
         #BU_LOG entry(Failed) in PROCESS_LOG table
+        print(f"Exception caught in ap_rack_true_up_runner method: {e}")
+        logging.exception(f"Exception caught in ap_rack_true_up_runner method: {e}")
         log_json = '[{"JOB_ID": "'+str(job_id)+'","jobname": "'+str(jobname)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "FAILED"}]'
         bu_alerts.bulog(process_name=jobname,table_name=table_name,status='FAILED',process_owner=owner ,row_count=0,log=log_json,database=database,warehouse=warehouse ) 
         bu_alerts.send_mail(receiver_email = receiver_email,mail_subject =f'JOB FAILED -{jobname}',mail_body = f'{jobname} failed, Attached logs',attachment_location = logfile)
-        logging.exception(e)
     
         
 if __name__ == "__main__":
-   AP_RACK_TRUEUP()
+   ap_rack_true_up_runner()
       
         
     

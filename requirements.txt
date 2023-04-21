@@ -1,0 +1,6 @@
+xlwings==0.24.9
+numpy==1.19.2
+pandas==1.2.4
+bu-alerts @ git+https://gitlab.com/biourjapower/bu_alerts.git@v0.1.0
+bu-config @ git+https://gitlab.com/biourjapower/bu_config.git
+bu-snowflake @ git+https://gitlab.com/biourjapower/bu_snowflake.git@v0.1.0
