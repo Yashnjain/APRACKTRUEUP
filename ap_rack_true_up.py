@@ -26,7 +26,7 @@ def xlOpener(inputFile):
         print(f"Exception caught in xlOpener method: {e}")
         logging.info(f"Exception caught in xlOpener method: {e}")
         raise e
-    
+
 def num_to_col_letters(num):
     try:
         letters = ''
@@ -39,7 +39,7 @@ def num_to_col_letters(num):
         print(f"Exception caught in num_to_col_letters method: {e}")
         logging.info(f"Exception caught in num_to_col_letters method: {e}")
         raise e
-    
+
 def insert_all_borders(cellrange:str,working_sheet,working_workbook):
     try:
         working_sheet.api.Range(cellrange).Select()
@@ -85,7 +85,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
     try:
         for file in glob.glob(rackInput+"\\*.xlsx"):
             path, file_name = os.path.split(file)
-            
+
             #Getting prev month dates
             file_date = file_name.split('_')[-1].replace(".xlsx","").strip()
             file_month = datetime.strptime(file_date,"%m.%Y").strftime("%b")
@@ -131,11 +131,11 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
             for i,x in TRUE_UP_DF.iterrows():
                 TRUE_UP_index_dict.setdefault(TRUE_UP_DF[TRUE_UP_DF.columns[0]][i], []).append(TRUE_UP_DF[TRUE_UP_DF.columns[1]][i])
                 print(x)
-                
+
             for i in TRUE_UP_index_dict.keys():
                 TRUE_UP_index_dict[i] = [ori_dict[i],TRUE_UP_index_dict[i]]    
             em_df = pd.DataFrame(columns = ['Vendor', 'Location', 'Qty', 'Amount', 'Diff', 'Pricing Terms'])
-            
+
             for key,value in TRUE_UP_index_dict.items():
                 for values in value[1]:
                     Open_gr_sheet.activate()
@@ -173,7 +173,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
                     try:
                         PVI_sheet.api.Range(f"{Account_letter_column}1").AutoFilter(Field:=f"{Account_no_column}", Criteria1:=[value[0]])
                     except:
-                        pass    
+                        pass
                     Pvi_last_row = PVI_sheet.range(f'A'+ str(PVI_sheet.cells.last_cell.row)).end('up').row
                     Pvi_last_column = PVI_sheet.range('A1').end('right').last_cell.column
                     Pvi_last_column_letter=num_to_col_letters(Pvi_last_column)
@@ -227,7 +227,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
                         logging.info("new case for price index recieved")
                         raise e
                     filters = list(set(Terminal_column_value))
-                    
+
                     for filter in filters:
                         temp_df = df[(df['Terminal ']==filter)]
                         temp_df.insert(loc = len(temp_df.columns)-1,column = 'Prov Price',value = round(temp_df['Prov Amt']/temp_df['Billed Qty'],5))
@@ -310,7 +310,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
             wb.app.kill()
         except:
             pass
-        
+
 def ap_rack_true_up_runner():
     try:
         job_id=np.random.randint(1000000,9999999)
@@ -323,17 +323,16 @@ def ap_rack_true_up_runner():
         # warehouse=credential_dict['DATABASE'].split(";")[1]
         database="BUITDB_DEV"
         warehouse="BUIT_WH"
-        
+
         #BU_LOG entry(started) in PROCESS_LOG table 
         log_json = '[{"JOB_ID": "'+str(job_id)+'","jobname": "'+str(jobname)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "STARTED"}]'
         bu_alerts.bulog(process_name=jobname,table_name=table_name,status='STARTED',process_owner=owner ,row_count=0,log=log_json,database=database,warehouse=warehouse)
-       
-        
+
         #for getting date of prev month req for some cases
         # prev_month_last_date = today_date.replace(day=1) -timedelta(days=1)
         # prev_month_year = datetime.strftime(prev_month_last_date, "%m.%y")
         # prev_month_year2 = datetime.strftime(prev_month_last_date, "%B %Y").upper()
-        
+
         #getting root location from buconfig
         root_loc = credential_dict["API_KEY"]
         logfile = os.getcwd()+'\\logs\\' + jobname+'.txt'
@@ -342,7 +341,7 @@ def ap_rack_true_up_runner():
         rackInput = root_loc+f"\\Input"
         priceInput = root_loc+f"\\Prices"
         rackOutput = root_loc+"\\Output"
-        
+
         logging.basicConfig(
             level=logging.INFO,
             format='%(asctime)s [%(levelname)s] - %(message)s',
@@ -354,19 +353,15 @@ def ap_rack_true_up_runner():
         log_json = '[{"JOB_ID": "'+str(job_id)+'","jobname": "'+str(jobname)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "COMPLETED"}]'
         bu_alerts.bulog(process_name=jobname,table_name=table_name,status='COMPLETED',process_owner=owner,row_count=1,log=log_json,database=database,warehouse=warehouse ) 
         bu_alerts.send_mail(receiver_email = receiver_email,mail_subject =f'JOB SUCCESS -{jobname}',mail_body = f'{jobname} Completed Successfully,Attached logs',attachment_location = logfile)
-        
+
     except Exception as e:
-        
+
         #BU_LOG entry(Failed) in PROCESS_LOG table
         print(f"Exception caught in ap_rack_true_up_runner method: {e}")
         logging.exception(f"Exception caught in ap_rack_true_up_runner method: {e}")
         log_json = '[{"JOB_ID": "'+str(job_id)+'","jobname": "'+str(jobname)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "FAILED"}]'
         bu_alerts.bulog(process_name=jobname,table_name=table_name,status='FAILED',process_owner=owner ,row_count=0,log=log_json,database=database,warehouse=warehouse ) 
         bu_alerts.send_mail(receiver_email = receiver_email,mail_subject =f'JOB FAILED -{jobname}',mail_body = f'{jobname} failed, Attached logs',attachment_location = logfile)
-    
-        
+
 if __name__ == "__main__":
    ap_rack_true_up_runner()
-      
-        
-    
