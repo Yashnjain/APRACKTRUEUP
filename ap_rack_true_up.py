@@ -250,7 +250,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
                         CHS_sheet.range(f'B{initial_row}').options(index = False).value = temp_df 
                         CHS_sheet.autofit()
                         CHS_sheet.api.Range(f"{initial_row}:{initial_row}").Font.Bold = True
-                        t_last_row = CHS_sheet.range(f'B'+ str(CHS_sheet.cells.last_cell.row)).end('up').row                     
+                        t_last_row = CHS_sheet.range(f'B'+ str(CHS_sheet.cells.last_cell.row)).end('up').row
                         CHS_sheet.api.Range(f"L{t_last_row+2}").Value = f'=SUM(L{initial_row+1}:L{t_last_row})'
                         Q_amt = CHS_sheet.api.Range(f"L{t_last_row+2}").Value
                         CHS_sheet.api.Range(f"Q{t_last_row+2}").Value = f'=SUM(Q{initial_row+1}:Q{t_last_row})'
@@ -326,7 +326,7 @@ def ap_rack_true_up_runner():
         
         #BU_LOG entry(started) in PROCESS_LOG table 
         log_json = '[{"JOB_ID": "'+str(job_id)+'","jobname": "'+str(jobname)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "STARTED"}]'
-        bu_alerts.bulog(process_name=jobname,table_name=table_name,status='STARTED',process_owner=owner ,row_count=0,log=log_json,database=database,warehouse=warehouse) 
+        bu_alerts.bulog(process_name=jobname,table_name=table_name,status='STARTED',process_owner=owner ,row_count=0,log=log_json,database=database,warehouse=warehouse)
        
         
         #for getting date of prev month req for some cases
@@ -335,7 +335,7 @@ def ap_rack_true_up_runner():
         # prev_month_year2 = datetime.strftime(prev_month_last_date, "%B %Y").upper()
         
         #getting root location from buconfig
-        root_loc = credential_dict["API_KEY"]                                   
+        root_loc = credential_dict["API_KEY"]
         logfile = os.getcwd()+'\\logs\\' + jobname+'.txt'
         trueup_file = root_loc+r'\Rack PO details'
         focus_mapping_file = root_loc+r'\Focus Mapping'
