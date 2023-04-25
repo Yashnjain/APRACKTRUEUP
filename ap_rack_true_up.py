@@ -93,7 +93,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
             file_month2 = datetime.strptime(file_date,"%m.%Y").strftime("%m")
             logging.info("Opening operating workbook instance of excel")
             if os.path.exists(file):
-                wb = xlOpener(file)    
+                wb = xlOpener(file)
             Open_gr_sheet = wb.sheets[f"Open GR {file_month} {file_year}"]
             Open_gr_sheet.activate()
             column_list = Open_gr_sheet.range("B6").expand('right').value
@@ -351,7 +351,7 @@ def ap_rack_true_up_runner():
         print(filename)
         #BU_LOG entry(Completed) in PROCESS_LOG table
         log_json = '[{"JOB_ID": "'+str(job_id)+'","jobname": "'+str(jobname)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "COMPLETED"}]'
-        bu_alerts.bulog(process_name=jobname,table_name=table_name,status='COMPLETED',process_owner=owner,row_count=1,log=log_json,database=database,warehouse=warehouse ) 
+        bu_alerts.bulog(process_name=jobname,table_name=table_name,status='COMPLETED',process_owner=owner,row_count=1,log=log_json,database=database,warehouse=warehouse) 
         bu_alerts.send_mail(receiver_email = receiver_email,mail_subject =f'JOB SUCCESS -{jobname}',mail_body = f'{jobname} Completed Successfully,Attached logs',attachment_location = logfile)
 
     except Exception as e:
@@ -360,7 +360,7 @@ def ap_rack_true_up_runner():
         print(f"Exception caught in ap_rack_true_up_runner method: {e}")
         logging.exception(f"Exception caught in ap_rack_true_up_runner method: {e}")
         log_json = '[{"JOB_ID": "'+str(job_id)+'","jobname": "'+str(jobname)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "FAILED"}]'
-        bu_alerts.bulog(process_name=jobname,table_name=table_name,status='FAILED',process_owner=owner ,row_count=0,log=log_json,database=database,warehouse=warehouse ) 
+        bu_alerts.bulog(process_name=jobname,table_name=table_name,status='FAILED',process_owner=owner ,row_count=0,log=log_json,database=database,warehouse=warehouse) 
         bu_alerts.send_mail(receiver_email = receiver_email,mail_subject =f'JOB FAILED -{jobname}',mail_body = f'{jobname} failed, Attached logs',attachment_location = logfile)
 
 if __name__ == "__main__":
