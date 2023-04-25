@@ -1,6 +1,6 @@
 1)Setup python and packages on the machine (it might be that stuff is already there):
 #https://www.python.org/downloads/
-install python-3.9.7-amd64.exe
+install python-3.8.5-amd64.exe
 Install the required packages using pip install -r requirements.txt
 
 2)In the config file check if correct basepath is present at API_KEY column or not.
