@@ -10,7 +10,7 @@ from datetime import datetime
 import xlwings.constants as win32c
 from bu_config import config as buconfig
 
-def xlOpener(inputFile):
+def xl_opener(inputFile):
     try:
         retry = 0
         while retry<10:
@@ -23,8 +23,8 @@ def xlOpener(inputFile):
                 if retry==9:
                     raise e
     except Exception as e:
-        print(f"Exception caught in xlOpener method: {e}")
-        logging.info(f"Exception caught in xlOpener method: {e}")
+        print(f"Exception caught in xl_opener method: {e}")
+        logging.info(f"Exception caught in xl_opener method: {e}")
         raise e
 
 def num_to_col_letters(num):
@@ -93,7 +93,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
             file_month2 = datetime.strptime(file_date,"%m.%Y").strftime("%m")
             logging.info("Opening operating workbook instance of excel")
             if os.path.exists(file):
-                wb = xlOpener(file)
+                wb = xl_opener(file)
             Open_gr_sheet = wb.sheets[f"Open GR {file_month} {file_year}"]
             Open_gr_sheet.activate()
             column_list = Open_gr_sheet.range("B6").expand('right').value
@@ -313,17 +313,32 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
 
 def ap_rack_true_up_runner():
     try:
+        logfile = os.getcwd()+'\\logs\\' + jobname+'.txt'
+        
+        for handler in logging.root.handlers[:]:
+            logging.root.removeHandler(handler)
+            
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s [%(levelname)s] - %(message)s',
+            filename=logfile)
+        
         job_id=np.random.randint(1000000,9999999)
         credential_dict = buconfig.get_config('AP_RACK_TRUEUP_AUTOMATION', 'N',other_vert= True)
-        owner = credential_dict['IT_OWNER']
-        jobname = credential_dict['PROJECT_NAME']
+        database=credential_dict['DATABASE'].split(";")[0]
+        warehouse=credential_dict['DATABASE'].split(";")[1]
         table_name = credential_dict['TABLE_NAME']
+        root_loc = credential_dict["API_KEY"]
+        jobname = credential_dict['PROJECT_NAME']
+        owner = credential_dict['IT_OWNER']
         receiver_email =credential_dict['EMAIL_LIST'] 
-        # database=credential_dict['DATABASE'].split(";")[0]
-        # warehouse=credential_dict['DATABASE'].split(";")[1]
+        
+        ##################Uncomment for Testing###################
         database="BUITDB_DEV"
         warehouse="BUIT_WH"
-
+        ###########################################################
+        logging.info("Starting AP_RACK_TRUEUP_AUTOMATION")
+        
         #BU_LOG entry(started) in PROCESS_LOG table 
         log_json = '[{"JOB_ID": "'+str(job_id)+'","jobname": "'+str(jobname)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "STARTED"}]'
         bu_alerts.bulog(process_name=jobname,table_name=table_name,status='STARTED',process_owner=owner ,row_count=0,log=log_json,database=database,warehouse=warehouse)
@@ -334,21 +349,14 @@ def ap_rack_true_up_runner():
         # prev_month_year2 = datetime.strftime(prev_month_last_date, "%B %Y").upper()
 
         #getting root location from buconfig
-        root_loc = credential_dict["API_KEY"]
-        logfile = os.getcwd()+'\\logs\\' + jobname+'.txt'
         trueup_file = root_loc+r'\Rack PO details'
         focus_mapping_file = root_loc+r'\Focus Mapping'
         rackInput = root_loc+f"\\Input"
         priceInput = root_loc+f"\\Prices"
         rackOutput = root_loc+"\\Output"
-
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s [%(levelname)s] - %(message)s',
-            filename=logfile)
-        logging.info("Starting AP_RACK_TRUEUP_AUTOMATION")
         filename = rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file)
-        print(filename)
+        print(f"New file name :{filename}")
+        
         #BU_LOG entry(Completed) in PROCESS_LOG table
         log_json = '[{"JOB_ID": "'+str(job_id)+'","jobname": "'+str(jobname)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "COMPLETED"}]'
         bu_alerts.bulog(process_name=jobname,table_name=table_name,status='COMPLETED',process_owner=owner,row_count=1,log=log_json,database=database,warehouse=warehouse) 
