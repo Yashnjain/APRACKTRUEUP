@@ -313,7 +313,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
 
 def ap_rack_true_up_runner():
     try:
-        logfile = os.getcwd()+'\\logs\\' + jobname+'.txt'
+        logfile = os.getcwd()+'\\logs\\app_rack_true_up_log.txt'
         
         for handler in logging.root.handlers[:]:
             logging.root.removeHandler(handler)
@@ -331,11 +331,13 @@ def ap_rack_true_up_runner():
         root_loc = credential_dict["API_KEY"]
         jobname = credential_dict['PROJECT_NAME']
         owner = credential_dict['IT_OWNER']
-        receiver_email =credential_dict['EMAIL_LIST'] 
+        receiver_email =credential_dict['EMAIL_LIST']
         
         ##################Uncomment for Testing###################
-        database="BUITDB_DEV"
-        warehouse="BUIT_WH"
+        # database="BUITDB_DEV"
+        # warehouse="BUIT_WH"
+        # root_loc =os.getcwd()+ r"\\test_files"
+        # receiver_email = "amanullah.khan@biourja.com"
         ###########################################################
         logging.info("Starting AP_RACK_TRUEUP_AUTOMATION")
         
