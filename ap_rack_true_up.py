@@ -333,12 +333,6 @@ def ap_rack_true_up_runner():
         owner = credential_dict['IT_OWNER']
         receiver_email =credential_dict['EMAIL_LIST']
         
-        ##################Uncomment for Testing###################
-        # database="BUITDB_DEV"
-        # warehouse="BUIT_WH"
-        # root_loc =os.getcwd()+ r"\\test_files"
-        # receiver_email = "amanullah.khan@biourja.com"
-        ###########################################################
         logging.info("Starting AP_RACK_TRUEUP_AUTOMATION")
         
         #BU_LOG entry(started) in PROCESS_LOG table 
@@ -356,6 +350,12 @@ def ap_rack_true_up_runner():
         rackInput = root_loc+f"\\Input"
         priceInput = root_loc+f"\\Prices"
         rackOutput = root_loc+"\\Output"
+        ##################Uncomment for Testing###################
+        database="BUITDB_DEV"
+        warehouse="BUIT_WH"
+        rackOutput =r'E:\testingEnvironment\J_local_drive\India\Trueup\TrueupAutomation\AP_Rack_TrueUp'+"\\Output"
+        receiver_email = "yashn.jain@biourja.com,imam.khan@biourja.com,deep.durugkar@biourja.com,amanullah.khan@biourja.com"
+        ###########################################################
         filename = rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file)
         print(f"New file name :{filename}")
         
