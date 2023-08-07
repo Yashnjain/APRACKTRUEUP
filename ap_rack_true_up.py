@@ -1,5 +1,6 @@
 import os
 import time
+import sys
 import glob
 import logging
 import bu_alerts
@@ -377,6 +378,8 @@ def ap_rack_true_up_runner():
         log_json = '[{"JOB_ID": "'+str(job_id)+'","jobname": "'+str(jobname)+'","CURRENT_DATETIME": "'+str(datetime.now())+'","STATUS": "FAILED"}]'
         bu_alerts.bulog(process_name=jobname,table_name=table_name,status='FAILED',process_owner=owner ,row_count=0,log=log_json,database=database,warehouse=warehouse) 
         bu_alerts.send_mail(receiver_email = receiver_email,mail_subject =f'JOB FAILED -{jobname}',mail_body = f'{jobname} failed, Attached logs',attachment_location = logfile)
+        sys.exit(-1)
+    
 
 if __name__ == "__main__":
    ap_rack_true_up_runner()
