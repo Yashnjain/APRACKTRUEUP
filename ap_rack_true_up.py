@@ -99,7 +99,11 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
             column_list = Open_gr_sheet.range("B6").expand('right').value
             Voucher_no_column=column_list.index('Voucher')+2
             Voucher_letter_column = num_to_col_letters(Voucher_no_column)
-            Open_gr_sheet.api.Range(f"{Voucher_letter_column}6").AutoFilter(Field:=f"{Voucher_no_column-1}", Criteria1:=["=*PVI*"], Operator:=win32c.AutoFilterOperator.xlAnd)
+            last_row = Open_gr_sheet.range(f'B'+ str(Open_gr_sheet.cells.last_cell.row)).end('up').row
+            last_column = Open_gr_sheet.range('B6').end('right').last_cell.column
+            last_column_letter=num_to_col_letters(last_column)
+            Open_gr_sheet.api.AutoFilterMode=False
+            Open_gr_sheet.api.Range(f"{Voucher_letter_column}6:{last_column_letter}{last_row}").AutoFilter(Field:=f"{Voucher_no_column-1}", Criteria1:=["=*PVI*"], Operator:=win32c.AutoFilterOperator.xlAnd)
             last_row = Open_gr_sheet.range(f'B'+ str(Open_gr_sheet.cells.last_cell.row)).end('up').row
             last_column = Open_gr_sheet.range('B6').end('right').last_cell.column
             last_column_letter=num_to_col_letters(last_column)
