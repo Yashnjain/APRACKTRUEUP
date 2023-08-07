@@ -358,7 +358,8 @@ def ap_rack_true_up_runner():
         database="BUITDB_DEV"
         warehouse="BUIT_WH"
         rackOutput =r'E:\testingEnvironment\J_local_drive\India\Trueup\TrueupAutomation\AP_Rack_TrueUp'+"\\Output"
-        receiver_email = "yashn.jain@biourja.com,imam.khan@biourja.com,deep.durugkar@biourja.com,amanullah.khan@biourja.com"
+        receiver_email = "yashn.jain@biourja.com,imam.khan@biourja.com,deep.durugkar@biourja.com,amanullah.khan@biourja.com,bhavana.kaurav@biourja.com"
+        jobname = "BIO-PAD01_" + jobname 
         ###########################################################
         filename = rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file)
         print(f"New file name :{filename}")
