@@ -304,6 +304,7 @@ def rackTrueup(priceInput,rackInput,trueup_file,rackOutput,focus_mapping_file):
                 logging.info("em_df not created or trueup dont exist");
             filename= rackOutput+"\\"+f"Rack AP Data {file_month} {file_year}.xlsx"
             wb.save(rackOutput+"\\"+f"Rack AP Data {file_month} {file_year}.xlsx")
+            print("DONE")
         return filename
     except Exception as e:
         print(f"Exception caught in rackTrueup method: {e}")
